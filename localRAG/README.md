@@ -16,6 +16,14 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
+Or using conda:
+
+```bash
+conda create -n rag python=3.13 pip
+conda activate rag
+conda install --file requirements.txt
+```
+
 Needs ollama with Mistral.
 
 ```bash
