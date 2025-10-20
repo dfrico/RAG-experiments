@@ -2,7 +2,6 @@ import re
 from pathlib import Path
 from wikipediaapi import Wikipedia
 
-# ---- CONFIG ----
 OUT = Path("data/wiki_pages")
 OUT.mkdir(parents=True, exist_ok=True)
 TOPICS = [
@@ -21,16 +20,11 @@ TOPICS = [
     "Deep learning",
     "Artificial intelligence"
 ]
-# ----------------
 
-
-# identify your app politely for Wikipedia API policy
-WIKI = Wikipedia(
+Wiki = Wikipedia(
     language="en",
     user_agent="MiniWikiRAG/0.1 (https://example.com; contact: you@example.com)",
 )
-# ----------------
-
 
 def sanitize(name: str) -> str:
     """Make a safe filename from a page title."""
@@ -39,13 +33,14 @@ def sanitize(name: str) -> str:
 
 for title in TOPICS:
     try:
-        page = WIKI.page(title)
+        page = Wiki.page(title)
         if not page.exists():
-            print(f"⚠️  Page not found: {title}")
+            print(f"Page not found: {title}")
             continue
 
         text = page.text
         (OUT / f"{sanitize(title)}.txt").write_text(text, encoding="utf-8")
-        print("✅ Saved:", title)
+        print("Saved:", title)
     except Exception as e:
-        print("⚠️  Skip:", title, "->", e)
+        print("Skip:", title, "->", e)
+

@@ -1,7 +1,7 @@
 from langchain_community.vectorstores import LanceDB
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain.chains import RetrievalQA
-from langchain_community.llms import Ollama
+from langchain_ollama import OllamaLLM
 import lancedb
 
 DB_PATH = "./lancedb"
@@ -12,7 +12,7 @@ MODEL = "mistral"
 conn = lancedb.connect(DB_PATH)
 embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 db = LanceDB(connection=conn, table_name=TABLE_NAME, embedding=embeddings)
-llm = Ollama(model=MODEL)
+llm = OllamaLLM(model=MODEL)
 
 # Create retriever + QA chain
 retriever = db.as_retriever(search_kwargs={"k": 5})
@@ -22,7 +22,5 @@ while True:
     q = input("\nAsk a question (or 'exit'): ")
     if q.strip().lower() in {"exit", "quit"}:
         break
-    answer = qa_chain.run(q)
-    print("\n--- Answer ---")
-    print(answer)
-    print("--------------")
+    answer = qa_chain.invoke(q)
+    print(answer['result'])

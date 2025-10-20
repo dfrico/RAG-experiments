@@ -10,4 +10,5 @@ embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 conn = lancedb.connect("./lancedb")
 db = LanceDB.from_documents(docs, embeddings, connection=conn, table_name="wiki_vectors")
 
-print("✅ Indexed", len(docs), "documents into LanceDB.")
+print("indexed", len(docs), "documents into LanceDB.")
+
