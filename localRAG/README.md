@@ -20,7 +20,7 @@ pip install -r requirements.txt
 Or using conda:
 
 ```bash
-conda create -n rag python=3.13.7 pip
+conda create -n rag python=3.13.7 pip=25.2
 conda activate rag
 conda install --file requirements.txt
 ```
