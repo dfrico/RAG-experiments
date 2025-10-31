@@ -1,0 +1,19 @@
+name: base
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+      - $LITHOPS # PyRun substitutes the right Lithops build
+      - lancedb
+      - langchain
+      - langchain-community
+      - langchain-huggingface
+      - langchain-ollama
+      - langchain-text-splitters
+      - sentence-transformers
+      - s3fs
+      - wikipedia-api
+      - awscli
+      - python-dotenv
