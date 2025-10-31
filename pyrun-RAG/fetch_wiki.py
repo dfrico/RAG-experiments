@@ -1,6 +1,7 @@
 import os
 import re
 import s3fs
+from dotenv import load_dotenv
 from wikipediaapi import Wikipedia
 
 TOPICS = [
@@ -25,9 +26,14 @@ Wiki = Wikipedia(
     user_agent="MiniWikiRAG/0.1 (https://example.com; contact: you@example.com)",
 )
 
+load_dotenv()
 S3_BUCKET = os.getenv('S3_BUCKET_NAME')
 S3_PREFIX = "data/wiki_pages"
 fs = s3fs.S3FileSystem()
+print(f"Saving pages on {S3_BUCKET}")
+
+if (S3_BUCKET == None):
+    quit();
 
 def sanitize(name: str) -> str:
     """Make a safe filename from a page title."""

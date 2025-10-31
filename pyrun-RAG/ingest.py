@@ -1,4 +1,3 @@
-# embed_fanout.py
 import itertools, s3fs, lithops, lancedb
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
