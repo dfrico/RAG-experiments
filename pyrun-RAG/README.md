@@ -19,7 +19,7 @@ python ingest.py \
 
 TODO: right now on ... I get an OOM error (`Exception: MemoryError - Function exceeded maximum memory and was killed`) :(
 
-Optionally for a faster run (not parallelized), run `python ingest.py` instead.
+Optionally for a faster run (not parallelized), run `python ingest_sc.py` instead.
 
 4. Run the parallel multi-query retriever (needs ollama - `ollama serve`)
 
