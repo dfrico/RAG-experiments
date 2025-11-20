@@ -1,12 +1,14 @@
 import argparse
 import asyncio
 import concurrent.futures
+import os
 from typing import List, Tuple
 
 import lancedb
+from dotenv import load_dotenv
 from langchain_community.vectorstores import LanceDB
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_ollama import OllamaLLM
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.documents import Document
 
 def make_paraphrases(llm, q: str, n: int = 3) -> List[str]:
@@ -15,7 +17,7 @@ def make_paraphrases(llm, q: str, n: int = 3) -> List[str]:
         "Return ONE paraphrase per line, no numbering, no extra text.\n\n"
         f"Question: {q}"
     )
-    text = llm.invoke(prompt)
+    text = llm.invoke(prompt).content
     lines = [ln.strip(" -\t") for ln in text.splitlines() if ln.strip()]
     if not lines:
         return [q]
@@ -65,22 +67,27 @@ def build_answer_prompt(docs: List[Document], q: str) -> str:
     )
 
 def main():
+    load_dotenv()
+
     ap = argparse.ArgumentParser()
-    ap.add_argument("--lancedb-uri", default="s3://my-bucket/lancedb",
-                    help="LanceDB URI (e.g., s3://bucket/lancedb or ./lancedb)")
     ap.add_argument("--table-name", default="wiki_vectors")
     ap.add_argument("--embed-model", default="all-MiniLM-L6-v2")
-    ap.add_argument("--llm-model", default="mistral", help="Ollama model name")
+    ap.add_argument("--llm-model", default="gemini-2.5-flash-lite", help="Gemini model name")
     ap.add_argument("--paraphrases", type=int, default=3, help="Number of paraphrases to generate")
     ap.add_argument("--k", type=int, default=5, help="Final top-k to keep after merge/rerank")
     ap.add_argument("--per-query-k", type=int, default=8, help="k per sub-query before merging")
     args = ap.parse_args()
 
     # Connect to LanceDB and prepare retrievers/LLM
-    conn = lancedb.connect(args.lancedb_uri)
+    dburi = f"s3://{os.getenv('S3_BUCKET_NAME')}/lancedb"
+    conn = lancedb.connect(dburi)
     emb = HuggingFaceEmbeddings(model_name=args.embed_model)
     db = LanceDB(connection=conn, table_name=args.table_name, embedding=emb)
-    llm = OllamaLLM(model=args.llm_model)
+    llm = ChatGoogleGenerativeAI(
+        model=args.llm_model,
+        google_api_key=os.getenv("GOOGLE_API_KEY"),
+        temperature=0.7
+    )
 
     print("Ready. Type 'exit' to quit.")
     while True:
@@ -96,8 +103,17 @@ def main():
             print("No results.")
             continue
 
+        # Print retrieved sources
+        print("\n--- Retrieved Sources ---")
+        for i, doc in enumerate(docs, 1):
+            source = doc.metadata.get('source', 'unknown')
+            # Extract filename from S3 path (e.g., "Retrieval-augmented_generation.txt")
+            filename = source.split('/')[-1].replace('.txt', '').replace('_', ' ')
+            print(f"[{i}] {filename}")
+        print("-------------------------\n")
+
         prompt = build_answer_prompt(docs, q)
-        print("\n" + llm.invoke(prompt))
+        print(llm.invoke(prompt).content)
 
 if __name__ == "__main__":
     main()
